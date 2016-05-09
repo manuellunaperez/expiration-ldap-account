@@ -40,6 +40,3 @@ done
 
 
 
-#obtenerdatos=`ldapsearch -h ldap.manuel.com -p 389 -x -b "ou=People,dc=manuel,dc=com" "modifyTimestamp" |egrep "dn:|modifyTimestamp:" | tr -d " " | cut -d "=" -f 2 | tr -d "\n" | sed s/Z/"\n"/g`
-
-
