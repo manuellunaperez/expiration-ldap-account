@@ -23,11 +23,11 @@ Calculardias() {
 }
 
 
-obtenerdatos=`ldapsearch -h $servidorldap -p 389 -x -b "$ramaldap" "modifyTimestamp" |egrep "dn:|modifyTimestamp:" | tr -d " " | cut -d "," -f 1 | cut -d ":" -f 2 | tr -d "\n" | sed s/Z/"\n"/g | grep uid`
+obtenerdatos=`ldapsearch -h ldap.manuel.com -p 389 -x -b "ou=People,dc=manuel,dc=com" "modifyTimestamp" |egrep "dn:|modifyTimestamp:" | tr -d " " | cut -d "=" -f 2 | tr -d "\n" | sed s/Z/"\n"/g`
 
 for i in $obtenerdatos; do
-        nombre=`echo $i | cut -d "=" -f 2 |grep -o -E [a-z.]+`
-        fecha=`echo $i |grep -o -E [0-9]+ |cut -c 1-8`
+        nombre=`echo $i | cut -d "," -f 1`
+        fecha=`echo $i | cut -d ":" -f 2 | cut -c 1-8`
         fechaaltaUE=`date --date="$fecha" +%s`
         if [[ $fechaaltaUE -le $margenmin ]] && [[ $fechaaltaUE -gt $margenmax ]]; then
                 Calculardias $nombre $fecha
@@ -37,5 +37,9 @@ for i in $obtenerdatos; do
         fi
 done
 
+
+
+
+#obtenerdatos=`ldapsearch -h ldap.manuel.com -p 389 -x -b "ou=People,dc=manuel,dc=com" "modifyTimestamp" |egrep "dn:|modifyTimestamp:" | tr -d " " | cut -d "=" -f 2 | tr -d "\n" | sed s/Z/"\n"/g`
 
 
