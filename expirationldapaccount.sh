@@ -4,31 +4,49 @@ servidorldap="ldaps://ldap1.hpc.cica.es:636"
 adminldap="cn=Manager,dc=cica,dc=es"
 passldap="-"
 ramaldap="ou=supercomputacion,ou=externos,ou=users,ou=cuentas,dc=cica,dc=es"
-#obtenerdatos=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" "createTimestamp" |egrep "dn:|createTimestamp:" | tr -d " " | cut -d "=" -f 2 | tr -d "\n" | sed s/Z/"\n"/g`
+#obtenerdatos=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" "modifyTimestamp" |egrep "dn:|modifyTimestamp:" | tr -d " " | cut -d "=" -f 2 | tr -d "\n" | sed s/Z/"\n"/g`
 
 diaactual=`date +%s`
 margenmin=`date +%s --date='-11 month'` #Se avisará cuando quede un mes hasta la fecha de expiración 
 margenmax=`date +%s --date='-12 month'` #El tiempo de expiración será de 1 año
 declare -A Usuariosexpirados
 
+Comprobarultimaconexion(){
+	local nombre=$1
+	local comprobar=`lastlog --before 30| egrep -v '(Nunca ha entrado|root|Nombre)' | tr -s ' ' | cut -d " " -f 1 | egrep "^$nombre"`
+	if [[ $nombre == $comprobar ]]; then
+		Usuariosexpirados[$nombre]=1
+	fi
+}
 renovarcuenta() {
-        local nuevafecha=`date +%Y%m%d%H%M%SZ`
-        local nombre=$1
-        local pass=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1` #Generamos una contraseña aleatoria 
-        local nuevapass=`slappasswd -h '{MD5}' -s "$pass"` #Ciframos la contraseña 
-        local accion=`ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
+	local nombre=$1
+	local pass=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1` #Generamos una contraseña aleatoria 
+	local nuevapass=`slappasswd -h '{MD5}' -s "$pass"` #Ciframos la contraseña 
+	local accion=`ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
 dn: uid=$nombre,$ramaldap
 changeType: modify
 replace: userPassword
 userPassword: $nuevapass
-EOF
-`
-        echo "La cuenta del usuario $nombre ha sido renovada."
-        echo "Contraseña: $pass"
+EOF`
+	echo "La cuenta del usuario $nombre ha sido renovada."
+	echo "Contraseña: $pass"
 }
-
 bloquearcuenta() {
-}
+	local nombre=$1
+	`ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
+dn: uid=$nombre,$ramaldap
+changeType: modify
+replace: pwdAccountLockedTime
+pwdAccountLockedTime: 000001010000Z
+EOF`
+	`ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
+dn: uid=$nombre,$ramaldap
+changeType: modify
+replace: loginShell
+loginShell: /bin/false
+EOF`
+	echo "La cuenta del usuario $nombre ha sido bloqueada."
+}	
 Calculardias() {
 	local nombre=$1
 	local fecha=$2
@@ -85,7 +103,7 @@ for i in $obtenerdatos; do
 				Calculardias $nombre $fecha
 			fi	
 			if [[ $fechaaltaUE -lt $margenmax ]]; then
-				Usuariosexpirados[$nombre]=1
+				Comprobarultimaconexion $nombre
 			fi
 		fi
 done
