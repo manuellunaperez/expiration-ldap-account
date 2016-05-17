@@ -1,0 +1,56 @@
+#!/bin/bash
+
+servidorldap="ldaps://ldap1.hpc.cica.es:636"
+adminldap="cn=Manager,dc=cica,dc=es"
+passldap="-"
+ramaldap="ou=supercomputacion,ou=externos,ou=users,ou=cuentas,dc=cica,dc=es"
+diaactual=`date +%s`
+margenmin=`date +%s --date='-11 month'` #Se avisará cuando quede un mes hasta la fecha de expiracion 
+margenmax=`date +%s --date='-12 month'` #El tiempo de expiracion será de 1 año
+declare -A Usuariosexpirados
+touch info_email.txt
+echo "Cuentas que van a expirar en los proximos 30 dias:" >> info_email.txt
+
+Calculardias() {
+        local nombre=$1
+        local fecha=$2
+        local fechacaducidad=`date +%Y/%m/%d -d "$fecha + 1 year"`
+        local fechacaducidadUE=`date +%s -d "$fecha + 1 year"`
+        local diferencia=$(( ( fechacaducidadUE - diaactual) / 86400 ))
+        local email=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" -s sub "uid=$nombre" mail |grep ^mail |cut -d " " -f 2`
+        WARNING $nombre $email $fechacaducidad
+        echo "La fecha de expiracion de la cuenta del usuario $nombre se aproxima: $fechacaducidad" >> info_email.txt
+        echo "Quedan $diferencia dias para que expire la cuenta, un mail fue enviado a $email automaticamente avisando a este usuario." >> info_email.txt
+}
+
+WARNING() {
+        local nombre=$1
+        local email="manuel.luna@cica.es"
+        local fecha=$3
+        echo -e "Estimado usuario: \nSu cuenta llamada $nombre expira el dia $fecha \nPara renovar su cuenta debe ponerse en contacto con los servicios de supercomputacion a través de la direcion de correo eciencia@cica.es.\n" | mail -s "Expiracion de cuenta en servicios de Supercomputacion de CICA" $email
+
+}
+WARNING_CICA() {
+        local email="manuel.luna@cica.es"
+        cat info_email.txt| mail -s "Expiracion de cuentas en servicios de Supercomputacion de CICA" $email
+}
+
+obtenerdatos=`ldapsearch -H $servidorldap  -x -D "$adminldap" -w "$passldap" -b "$ramaldap" "modifyTimestamp" |egrep "dn:|modifyTimestamp" |egrep "dn:|modifyTimestamp:" | tr -d " " | cut -d "=" -f 2 | tr -d "\n" | sed s/Z/"\n"/g`
+for i in $obtenerdatos; do
+        nombre=`echo $i | cut -d "," -f 1`
+        fecha=`echo $i | cut -d ":" -f 2 | cut -c 1-8`
+        fechaaltaUE=`date --date="$fecha" +%s`
+
+        if [[ $nombre != "supercomputacion" ]]; then
+                        if [[ $fechaaltaUE -le $margenmin ]] && [[ $fechaaltaUE -gt $margenmax ]]; then
+                                Calculardias $nombre $fecha
+                        fi
+                        if [[ $fechaaltaUE -lt $margenmax ]]; then
+                                Usuariosexpirados[$nombre]=1
+                        fi
+                fi
+done
+echo "\n---------------------Usuarios Expirados---------------------------" >> info_email.txt
+echo "${!Usuariosexpirados[@]}" >> info_email.txt
+WARNING_CICA
+rm info_email.txt
