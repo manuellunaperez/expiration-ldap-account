@@ -7,7 +7,10 @@ Objetivo: Poner fecha de caducidad en las cuentas creadas de supercomputación.
 mailldapaccount:
  - Comprueba las cuentas que expiran en menos de 1 mes.
  - Comprueba las cuentas  ya expiradas, comprobando la fecha de última modificación y los usuarios que no han accedido a sésamo en un periodo de 1 año. 
- - Se informa al cica de las cuentas que van a expirar y las ya expiradas.
+ - Se informa al cica por email de las cuentas que van a expirar y las ya expiradas.
+ - Se envia al usuario un email informando de:
+	- Si la fecha de expiración se aproxima.
+	- Si su cuenta ya ha expirado, las acciones que debe realizar para renovar su cuenta.
 
 expirationldapaccount:
  - Comprueba las cuentas que van a expirar y las expiradas.
