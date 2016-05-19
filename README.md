@@ -18,4 +18,9 @@ expirationldapaccount:
 	- Bloquear, se añadirá el atributo "pwdAccountLockedTime: 000001010000Z" además de modificar la shell del usuario a  "/bin/false".
 	- Renovar, consiste en modificar la contraseña que se generará automaticamente, borrar el atributo "pwdAccountLockedTime" y modificar la shell a "/bin/bash"
 
+ccionldap:
 
+ - Comprueba los usuarios que están bloqueados
+ - Se preguntará qué accion realizar, siendo las opciones:
+	- Renovar.
+	- Eliminar.

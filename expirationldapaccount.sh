@@ -28,6 +28,12 @@ replace: loginShell
 loginShell: /bin/bash
 EOF`
 
+	`ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
+dn: uid=$nombre,$ramaldap
+changeType: modify
+delete: pwdAccountLockedTime
+EOF`
+
 	echo "La cuenta del usuario $nombre ha sido renovada."
 	echo "Contraseña: $pass"
 }
@@ -36,7 +42,7 @@ bloquearcuenta() {
 	`ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
 dn: uid=$nombre,$ramaldap
 changeType: modify
-replace: pwdAccountLockedTime
+add: pwdAccountLockedTime
 pwdAccountLockedTime: 000001010000Z
 EOF`
 	`ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
@@ -86,20 +92,19 @@ Acciones() {
 
 
 Comprobarultimaconexion=`ssh sesamo "bash /opt/scripts/usuarios-ultimaConexion.sh" | egrep -v '(Nunca ha entrado|root|Nombre)' | tr -s ' ' | cut -d " " -f 1 | tail -n+4`
-obtenerdatos=`ldapsearch -H $servidorldap  -x -D "$adminldap" -w "$passldap" -b "$ramaldap" "modifyTimestamp" |egrep "dn:|modifyTimestamp" |egrep "dn:|modifyTimestamp:" | tr -d " " | cut -d "=" -f 2 | tr -d "\n" | sed s/Z/"\n"/g`
+obtenerdatos=`ldapsearch -H $servidorldap  -x -D "$adminldap" -w "$passldap" -b "$ramaldap" "modifyTimestamp" |egrep "^dn:|^modifyTimestamp:" | tr -d " " | cut -d "=" -f 2 | tr -d "\n" | sed s/Z/"\n"/g`
 for i in $obtenerdatos; do
-        nombre=`echo $i | cut -d "," -f 1`
-        fecha=`echo $i | cut -d ":" -f 2 | cut -c 1-8`
-        fechaaltaUE=`date --date="$fecha" +%s`
-        
-        if [[ $nombre != "supercomputacion" ]]; then
-			if [[ $fechaaltaUE -le $margenmin ]] && [[ $fechaaltaUE -gt $margenmax ]]; then
-				Calculardias $nombre $fecha
-			fi	
-			if [[ $fechaaltaUE -lt $margenmax ]]; then
-				Usuariosexpirados[$nombre]=1
-			fi
+	nombre=`echo $i | cut -d "," -f 1`
+	fecha=`echo $i | cut -d ":" -f 2 | cut -c 1-8`
+	fechaaltaUE=`date --date="$fecha" +%s`
+	if [[ $nombre != "supercomputacion" ]]; then
+		if [[ $fechaaltaUE -le $margenmin ]] && [[ $fechaaltaUE -gt $margenmax ]]; then
+			Calculardias $nombre $fecha
+		fi	
+		if [[ $fechaaltaUE -lt $margenmax ]]; then
+			Usuariosexpirados[$nombre]=1
 		fi
+	fi
 done
 for usuario in $Comprobarultimaconexion; do #Comprobamos los usuarios que llevan más de 1 año sin entrar a sesamo y que no estén bloqueados.
 	comprobarshell=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" "uid=$usuario" loginShell | egrep ^loginShell | cut -d " " -f 2 `

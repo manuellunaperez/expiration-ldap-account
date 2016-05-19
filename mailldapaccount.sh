@@ -43,12 +43,11 @@ EXPIRADO() {
 
 }
 
-obtenerdatos=`ldapsearch -H $servidorldap  -x -D "$adminldap" -w "$passldap" -b "$ramaldap" "modifyTimestamp" |egrep "dn:|modifyTimestamp" |egrep "dn:|modifyTimestamp:" | tr -d " " | cut -d "=" -f 2 | tr -d "\n" | sed s/Z/"\n"/g`
+obtenerdatos=`ldapsearch -H $servidorldap  -x -D "$adminldap" -w "$passldap" -b "$ramaldap" "modifyTimestamp" |egrep "^dn:|^modifyTimestamp:" | tr -d " " | cut -d "=" -f 2 | tr -d "\n" | sed s/Z/"\n"/g`
 for i in $obtenerdatos; do
         nombre=`echo $i | cut -d "," -f 1`
         fecha=`echo $i | cut -d ":" -f 2 | cut -c 1-8`
         fechaaltaUE=`date --date="$fecha" +%s`
-
         if [[ $nombre != "supercomputacion" ]]; then
                         if [[ $fechaaltaUE -le $margenmin ]] && [[ $fechaaltaUE -gt $margenmax ]]; then
                                 Calculardías $nombre $fecha
@@ -56,7 +55,7 @@ for i in $obtenerdatos; do
                         if [[ $fechaaltaUE -lt $margenmax ]]; then
                                 Usuariosexpirados[$nombre]=1
                         fi
-                fi
+        fi
 done
 
 echo -e  "\n---------------------Usuarios Expirados---------------------------\n" >> info_email.txt
