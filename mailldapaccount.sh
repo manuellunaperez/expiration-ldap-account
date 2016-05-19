@@ -9,30 +9,38 @@ margenmin=`date +%s --date='-11 month'` #Se avisará cuando quede un mes hasta l
 margenmax=`date +%s --date='-12 month'` #El tiempo de expiracion será de 1 año
 declare -A Usuariosexpirados
 touch info_email.txt
-echo "Cuentas que van a expirar en los proximos 30 dias:" >> info_email.txt
+echo "Cuentas que expiran en los próximos 30 días:" > info_email.txt
 
-Calculardias() {
+Calculardías() {
         local nombre=$1
         local fecha=$2
         local fechacaducidad=`date +%Y/%m/%d -d "$fecha + 1 year"`
         local fechacaducidadUE=`date +%s -d "$fecha + 1 year"`
-        local diferencia=$(( ( fechacaducidadUE - diaactual) / 86400 ))
+        local diferencia=$(( ( fechacaducidadUE - díaactual) / 86400 ))
         local email=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" -s sub "uid=$nombre" mail |grep ^mail |cut -d " " -f 2`
         WARNING $nombre $email $fechacaducidad
-        echo "La fecha de expiracion de la cuenta del usuario $nombre se aproxima: $fechacaducidad" >> info_email.txt
-        echo "Quedan $diferencia dias para que expire la cuenta, un mail fue enviado a $email automaticamente avisando a este usuario." >> info_email.txt
+        echo "La fecha de expiración de la cuenta del usuario $nombre se aproxima: $fechacaducidad" >> info_email.txt
+        echo "Quedan $diferencia días para que expire la cuenta, un mail fue enviado a $email automáticamente avisando a este usuario." >> info_email.txt
 }
 
 WARNING() {
         local nombre=$1
-        local email="manuel.luna@cica.es"
+        local email=$2
         local fecha=$3
-        echo -e "Estimado usuario: \nSu cuenta llamada $nombre expira el dia $fecha \nPara renovar su cuenta debe ponerse en contacto con los servicios de supercomputacion a través de la direcion de correo eciencia@cica.es.\n" | mail -s "Expiracion de cuenta en servicios de Supercomputacion de CICA" $email
+        echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informarle que su cuenta llamada $nombre expira el día $fecha \n Para poder utilizando dicho usuario en los servicios de Supercomputación debe renovar su cuenta.\nPara renovar su cuenta debe ponerse en contacto con los servicios de supercomputación a través de la dirección de correo eciencia@cica.es \n" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Fecha de expiración de su cuenta en servicios de Supercomputación de CICA" $email
 
 }
 WARNING_CICA() {
-        local email="manuel.luna@cica.es"
-        cat info_email.txt| mail -s "Expiracion de cuentas en servicios de Supercomputacion de CICA" $email
+        local email="eciencia@cica.es"
+        cat info_email.txt| mail -a "Content-Type: text/plain; charset=UTF-8" -s "Cuentas en servicios de Supercomputación de CICA" $email
+}
+
+
+EXPIRADO() {
+        local nombre=$1
+        local email=$2
+        echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informale que su cuenta $nombre ha expirado en los servicios de Supercomputación de CICA. \nPara renovar su cuenta debe ponerse en contacto con los servicios de supercomputacion a través de la direcion de correo eciencia@cica.es.\n" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Expiración de cuenta en servicios de Supercomputacion de CICA" $email
+
 }
 
 obtenerdatos=`ldapsearch -H $servidorldap  -x -D "$adminldap" -w "$passldap" -b "$ramaldap" "modifyTimestamp" |egrep "dn:|modifyTimestamp" |egrep "dn:|modifyTimestamp:" | tr -d " " | cut -d "=" -f 2 | tr -d "\n" | sed s/Z/"\n"/g`
@@ -43,14 +51,26 @@ for i in $obtenerdatos; do
 
         if [[ $nombre != "supercomputacion" ]]; then
                         if [[ $fechaaltaUE -le $margenmin ]] && [[ $fechaaltaUE -gt $margenmax ]]; then
-                                Calculardias $nombre $fecha
+                                Calculardías $nombre $fecha
                         fi
                         if [[ $fechaaltaUE -lt $margenmax ]]; then
                                 Usuariosexpirados[$nombre]=1
                         fi
                 fi
 done
-echo "\n---------------------Usuarios Expirados---------------------------" >> info_email.txt
-echo "${!Usuariosexpirados[@]}" >> info_email.txt
+
+echo -e  "\n---------------------Usuarios Expirados---------------------------\n" >> info_email.txt
+
+Comprobarultimaconexion=`ssh sesamo "bash /opt/scripts/usuarios-ultimaConexion.sh" | egrep -v '(Nunca ha entrado|root|Nombre)' | tr -s ' ' | cut -d " " -f 1 | tail -n+4`
+for usuario in $Comprobarultimaconexion; do #Comprobamos los usuarios que llevan más de 1 año sin entrar a sesamo y que no estén bloqueados.
+	comprobarshell=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" "uid=$usuario" loginShell | egrep ^loginShell | cut -d " " -f 2 `
+	email=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" -s sub "uid=$usuario" mail |grep ^mail |cut -d " " -f 2`
+	if [[ $comprobarshell == "/bin/bash" ]]; then
+		Usuariosexpirados[$usuario]=1
+		echo -e "\nEl usuario $usuario ha expirado, puede ponerse en contacto con este usuario a través de $email." >> info_email.txt
+		EXPIRADO $usuario $email
+	fi
+done
+
 WARNING_CICA
 rm info_email.txt

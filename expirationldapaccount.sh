@@ -14,12 +14,20 @@ renovarcuenta() {
 	local nombre=$1
 	local pass=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1` #Generamos una contraseña aleatoria 
 	local nuevapass=`slappasswd -h '{MD5}' -s "$pass"` #Ciframos la contraseña 
-	local accion=`ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
+	`ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
 dn: uid=$nombre,$ramaldap
 changeType: modify
 replace: userPassword
 userPassword: $nuevapass
 EOF`
+
+	`ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
+dn: uid=$nombre,$ramaldap
+changeType: modify
+replace: loginShell
+loginShell: /bin/bash
+EOF`
+
 	echo "La cuenta del usuario $nombre ha sido renovada."
 	echo "Contraseña: $pass"
 }
@@ -49,7 +57,7 @@ Calculardias() {
 	echo "Quedan $diferencia dias para que expire la cuenta"
 }
 Acciones() {
-	for nombre ldapsearch -H ldaps://ldap1.hpc.cica.es:636 -x -D "cn=Manager,dc=cica,dc=es" -w "DLX39E<&q3" -b "ou=supercomputacion,ou=externos,ou=users,ou=cuentas,dc=cica,dc=es" -s sub "uid=$usuario" mailin "${!Usuariosexpirados[@]}"; do
+	for nombre in "${!Usuariosexpirados[@]}"; do
 		echo "La cuenta del usuario $nombre ha caducado"
 		echo $'Pulse 0 para salir. \nPulse 1 para bloquear la cuenta. \nPulse 2 para renovar la cuenta.'
 		read -n1 -p "Introduzca un opción ha realizar con el usuario: " ACCION
