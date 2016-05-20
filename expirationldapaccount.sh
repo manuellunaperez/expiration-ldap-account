@@ -20,20 +20,6 @@ changeType: modify
 replace: userPassword
 userPassword: $nuevapass
 EOF`
-
-	`ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
-dn: uid=$nombre,$ramaldap
-changeType: modify
-replace: loginShell
-loginShell: /bin/bash
-EOF`
-
-	`ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
-dn: uid=$nombre,$ramaldap
-changeType: modify
-delete: pwdAccountLockedTime
-EOF`
-
 	echo "La cuenta del usuario $nombre ha sido renovada."
 	echo "Contraseña: $pass"
 }

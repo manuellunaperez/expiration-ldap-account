@@ -16,11 +16,11 @@ expirationldapaccount:
  - Comprueba las cuentas que van a expirar y las expiradas.
  - Se preguntará que acción realizar con las cuentas expiradas, siendo estas las opciones:
 	- Bloquear, se añadirá el atributo "pwdAccountLockedTime: 000001010000Z" además de modificar la shell del usuario a  "/bin/false".
-	- Renovar, consiste en modificar la contraseña que se generará automaticamente, borrar el atributo "pwdAccountLockedTime" y modificar la shell a "/bin/bash"
+	- Renovar, consiste en modificar la contraseña, que se generará automaticamente.
 
-ccionldap:
+Accionldap:
 
  - Comprueba los usuarios que están bloqueados
  - Se preguntará qué accion realizar, siendo las opciones:
-	- Renovar.
-	- Eliminar.
+	- Desbloquear, se modifica la contraseña automáticamente, se borra al atributo "pwdAccountLockedTime" y se cambia la shell a "/bin/bash.
+	- Eliminar, se elimina la cuenta de ldap.

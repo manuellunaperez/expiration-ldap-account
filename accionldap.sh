@@ -7,7 +7,7 @@ ramaldap="ou=supercomputacion,ou=externos,ou=users,ou=cuentas,dc=cica,dc=es"
 
 declare -A Usuariosbloqueados
 
-renovarcuenta() {
+desbloquearcuenta() {
 	local nombre=$1
 	local pass=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1` #Generamos una contraseña aleatoria 
 	local nuevapass=`slappasswd -h '{MD5}' -s "$pass"` #Ciframos la contraseña 
@@ -44,7 +44,7 @@ eliminarcuenta() {
 Acciones() {
 	for nombre in "${!Usuariosbloqueados[@]}"; do
 		echo "Acciones a realizar con la cuenta de $nombre"
-		echo $'Pulse 0 para salir. \nPulse 1 para eliminar la cuenta. \nPulse 2 para renovar la cuenta.'
+		echo $'Pulse 0 para salir. \nPulse 1 para eliminar la cuenta. \nPulse 2 para desbloquear la cuenta.'
 		read -n1 -p "Introduzca un opción ha realizar con el usuario: " ACCION
 		case $ACCION in
 			0)
@@ -58,7 +58,7 @@ Acciones() {
 				;;
 			2)
 				clear
-				renovarcuenta $nombre
+				desbloquearcuenta $nombre
 				;;
 			*)
 				clear
