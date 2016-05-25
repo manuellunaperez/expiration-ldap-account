@@ -41,7 +41,7 @@ EOF`
 
 eliminarcuenta() {
 	local nombre=$1
-	`ldapdelete -H $servidorldap -x -D "$adminldap" -w "$passldap" "uid=$nombre,ou=supercomputacion,ou=externos,ou=users,ou=cuentas,dc=cica,dc=es"`
+	`2>/dev/null 1>/dev/null ldapdelete -H $servidorldap -x -D "$adminldap" -w "$passldap" "uid=$nombre,ou=supercomputacion,ou=externos,ou=users,ou=cuentas,dc=cica,dc=es"`
 
 	echo "La cuenta del usuario $nombre ha sido eliminada."
 }	

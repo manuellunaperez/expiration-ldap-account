@@ -11,7 +11,7 @@ declare -A Usuariosexpirados
 touch info_email.txt
 echo "Cuentas que expiran en los próximos 30 días:" > info_email.txt
 
-Calculardías() {
+Calculardias() {
 	local nombre=$1
 	local fecha=$2
 	local fechacaducidad=`date +%Y/%m/%d -d "$fecha + 1 year"`
