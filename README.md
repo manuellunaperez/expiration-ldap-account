@@ -17,7 +17,7 @@ Accionldap:
 
  - Busca los usuarios que están bloqueados, comprobando la shell de todos los usuarios.
  - Una vez obtenido los usuarios se preguntará qué accion realizar, siendo las opciones:
-	-Desbloquear, se genera una contraseña automáticamente, se borra el atributo "pwdAccountLockedTime" y se cambia la shell a "/bin/bash". Se informa al usuario por correo de sus nuevos datos de acceso.
-	-Eliminar, se elimina la cuenta de ldap.
+	- Desbloquear, se genera una contraseña automáticamente, se borra el atributo "pwdAccountLockedTime" y se cambia la shell a "/bin/bash". Se informa al usuario por correo de sus nuevos datos de acceso.
+	- Eliminar, se elimina la cuenta de ldap.
 
 mailldapaccount será añadido al crontab para que se ejecute semanalmente.
