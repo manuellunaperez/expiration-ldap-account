@@ -27,18 +27,18 @@ bloquearcuenta() {
 	for nombre in "${!Usuariosexpirados[@]}"; do
 		email=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" -s sub "uid=$nombre" mail |grep ^mail |cut -d " " -f 2`
 
-		`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
-dn: uid=$nombre,$ramaldap
-changeType: modify
-add: pwdAccountLockedTime
-pwdAccountLockedTime: 000001010000Z
-EOF`
-		`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
-dn: uid=$nombre,$ramaldap
-changeType: modify
-replace: loginShell
-loginShell: /bin/false
-EOF`
+#		`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
+#dn: uid=$nombre,$ramaldap
+#changeType: modify
+#add: pwdAccountLockedTime
+#pwdAccountLockedTime: 000001010000Z
+#EOF`
+#		`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
+#dn: uid=$nombre,$ramaldap
+#changeType: modify
+#replace: loginShell
+#loginShell: /bin/false
+#EOF`
 		echo -e "\nEl usuario $nombre ha expirado, puede ponerse en contacto con este usuario a través de $email." >> info_email.txt
 		MAIL_EXPIRADO $nombre $email
 	done

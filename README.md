@@ -19,5 +19,7 @@ Accionldap:
  - Una vez obtenido los usuarios se preguntará qué accion realizar, siendo las opciones:
 	- Desbloquear, se genera una contraseña automáticamente, se borra el atributo "pwdAccountLockedTime" y se cambia la shell a "/bin/bash". Se informa al usuario por correo de sus nuevos datos de acceso.
 	- Eliminar, se elimina la cuenta de ldap.
+ - Busca los usuarios que van a expirar y dá la posibilidad de renovar a dichos usuarios.
 
+ - Busca los usuarios que han expirado y ejecuta la posibilidad de renovar o bloquear a estos. 
 mailldapaccount será añadido al crontab para que se ejecute semanalmente.
