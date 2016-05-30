@@ -130,7 +130,7 @@ Accionesbloqueados() {
 			*)
 				clear
 				echo "ERROR: No existe esa opción" 
-				Acciones $nombre
+				Accionesbloqueados $nombre
 				;;
 		esac
 	done
@@ -169,7 +169,7 @@ Accionesmenos1mes() {
 			*)
 				clear
 				echo "ERROR: No existe esa opción" 
-				Acciones $nombre
+				Accionesmenos1mes $nombre
 				;;
 		esac
 	done
@@ -221,7 +221,7 @@ Accionesexpirados() {
 			*)
 				clear
 				echo "ERROR: No existe esa opción" 
-				Acciones $nombre
+				Accionesexpirados $nombre
 				;;
 		esac
 	done
