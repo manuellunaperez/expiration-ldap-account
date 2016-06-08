@@ -61,18 +61,18 @@ eliminarcuenta() {
 
 bloquearcuenta() {
 	local nombre=$1
-#		`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
-#dn: uid=$nombre,$ramaldap
-#changeType: modify
-#add: pwdAccountLockedTime
-#pwdAccountLockedTime: 000001010000Z
-#EOF`
-#		`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
-#dn: uid=$nombre,$ramaldap
-#changeType: modify
-#replace: loginShell
-#loginShell: /bin/false
-#EOF`
+		`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
+dn: uid=$nombre,$ramaldap
+changeType: modify
+add: pwdAccountLockedTime
+pwdAccountLockedTime: 000001010000Z
+EOF`
+		`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
+dn: uid=$nombre,$ramaldap
+changeType: modify
+replace: loginShell
+loginShell: /bin/false
+EOF`
 
 }	
 
