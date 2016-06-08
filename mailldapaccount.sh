@@ -42,7 +42,7 @@ bloquearcuenta() {
 #loginShell: /bin/false
 #EOF`
 		echo -e "\nEl usuario $nombre ha expirado, puede ponerse en contacto con este usuario a través de $email." >> info_email.txt
-		MAIL_EXPIRADO $nombre $email
+		INFO_EXPIRADO $nombre $email
 	done
 }	
 
@@ -63,8 +63,8 @@ WARNING_CICA() {
 	fi
 }
 
-#MAIL_EXPIRADO: Informa al usuario de que su cuenta ha expirado.
-MAIL_EXPIRADO() {
+#INFO_EXPIRADO: Informa al usuario de que su cuenta ha expirado.
+INFO_EXPIRADO() {
 	local nombre=$1
 	local email=$2
 	#echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informale que su cuenta $nombre ha expirado en los servicios de Supercomputación de CICA. \nPara renovar su cuenta debe ponerse en contacto con los servicios de supercomputacion a través de la direcion de correo eciencia@cica.es.\n" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Expiración de cuenta en servicios de Supercomputacion de CICA" $email
