@@ -15,19 +15,19 @@ declare -A Usuariosexpirados
 informardesbloqueo() {
         local nombre=$1
         local pass=$2
-        local email="manuel.luna@cica.es"
+        local email=$3
  #      local email=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" -s sub "uid=$nombre" mail |grep ^mail |cut -d " " -f 2`
 
-        echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informale que su cuenta $nombre ha sido desbloqueada de los servicios de Supercomputación de CICA. \n\nEstos son los nuevos datos de acceso: \nUsuario: $nombre \nContraseña: $pass" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Cuenta en los servicios de Supercomputación de CICA" $email
+        echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informale que su cuenta $nombre ha sido desbloqueada de los servicios de Supercomputación de CICA. \n\nEstos son los nuevos datos de acceso: \nUsuario: $nombre \nContraseña: $pass" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Cuenta en los servicios de Supercomputación de CICA" -aFrom:Supercomputacion\ CICA\<eciencia@cica.es\> $email
 }
 
 informarrenovacion() {
         local nombre=$1
         local pass=$2
-        local email="manuel.luna@cica.es"
+        local email=$3
         #local email=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" -s sub "uid=$nombre" mail |grep ^mail |cut -d " " -f 2`
 
-        echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informale que su cuenta $nombre ha sido renovada de los servicios de Supercomputación de CICA. \n\nEstos son los nuevos datos de acceso: \nUsuario: $nombre \nContraseña: $pass" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Cuenta en los servicios de Supercomputación de CICA" $email
+        echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informale que su cuenta $nombre ha sido renovada de los servicios de Supercomputación de CICA. \n\nEstos son los nuevos datos de acceso: \nUsuario: $nombre \nContraseña: $pass" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Cuenta en los servicios de Supercomputación de CICA" -aFrom:Supercomputacion\ CICA\<eciencia@cica.es\> $email
 }
 
 desbloquearcuenta() {
@@ -91,8 +91,8 @@ renovarcuenta() {
 
 Accionesbloqueados() {
 	for nombre in "${!Usuariosbloqueados[@]}"; do
-		echo "Acciones a realizar con la cuenta de $nombre"
-		echo $'Pulse 0 para salir. \nPulse 1 para eliminar la cuenta. \nPulse 2 para desbloquear la cuenta.\n'
+		echo "Usuario bloqueado: Acciones a realizar con la cuenta de $nombre"
+		echo $'Pulse 0 para salir. \nPulse 1 para eliminar la cuenta. \nPulse 2 para desbloquear la cuenta.\nPulse 3 para pasar a la siguiente cuenta.\n'
 		read -n1 -p "Introduzca un opción ha realizar con el usuario: " ACCION
 		case $ACCION in
 			0)
@@ -101,7 +101,7 @@ Accionesbloqueados() {
 				exit;;
 			1)
 				echo $'\n'
-				read -n1 -p "¿Está seguro que desea borrar este usuario?: [s/n]\n" ACCION2
+				read -n1 -p "¿Está seguro que desea borrar este usuario?: [s/n]" ACCION2
 				case $ACCION2 in
 					s)
 						clear
@@ -109,13 +109,13 @@ Accionesbloqueados() {
 						;;
 					n)
 						clear
-						echo "Usted ha decidido no eliminar la cuenta $nombre"
+						echo "La cuenta $nombre no será eliminada."
 						;;
 				esac
 				;;
 			2)
 				echo $'\n'
-				read -n1 -p "¿Está seguro que desea desbloquear este usuario?: [s/n]\n" ACCION3
+				read -n1 -p "¿Está seguro que desea desbloquear este usuario?: [s/n]" ACCION3
 				case $ACCION3 in
 					s)
 						clear
@@ -123,9 +123,13 @@ Accionesbloqueados() {
 						;;
 					n)
 						clear
-						echo "Usted ha decido no desbloquear esta cuenta, $nombre seguirá bloqueada."
+						echo "Se ha decido no desbloquear esta cuenta, $nombre seguirá bloqueada."
 						;;
 				esac
+				;;
+			3)
+				clear
+				echo "Ninguna acción a realizar con la cuenta $nombre ."
 				;;
 			*)
 				clear
@@ -141,7 +145,7 @@ Accionesmenos1mes() {
 
 	for nombre in "${!Menosde1mes[@]}"; do
 		echo "La cuenta $nombre caduca en menos de 1 mes"
-		echo $'Pulse 0 para salir. \nPulse 1 para renovar la cuenta. \nPulse 2 para pasar a la siguiente cuenta.\n'
+		echo $'Pulse 0 para salir. \nPulse 1 para renovar la cuenta. \nPulse 2 para pasar a la siguiente cuenta. \n'
 		read -n1 -p "Introduzca un opción ha realizar con el usuario: " ACCION4
 		case $ACCION4 in
 			0)
@@ -150,7 +154,7 @@ Accionesmenos1mes() {
 				exit;;
 			1)
 				echo $'\n'
-				read -n1 -p "¿Está seguro que desea renovar a este usuario?: [s/n]\n" ACCION5
+				read -n1 -p "¿Está seguro que desea renovar a este usuario?: [s/n]" ACCION5
 				case $ACCION5 in
 					s)
 						clear
@@ -158,13 +162,13 @@ Accionesmenos1mes() {
 						;;
 					n)
 						clear
-						echo "Usted ha decidido no renovar la cuenta $nombre"
+						echo "Ha decidido no renovar la cuenta $nombre"
 						;;
 				esac
 				;;
 			2)		
 				clear
-				echo "Usted ha decido no realizar ninguna acción con la cuenta $nombre ."
+				echo "Ninguna acción a realizar con la cuenta $nombre ."
 				;;
 			*)
 				clear
@@ -178,7 +182,7 @@ Accionesmenos1mes() {
 Accionesexpirados() {
 
 	for nombre in "${!Usuariosexpirados[@]}"; do
-		echo "La cuenta $nombre ha expirado"
+		echo "La cuenta $nombre ha expirado, seleccione una opción a realizar con este usuario."
 		echo $'Pulse 0 para salir. \nPulse 1 para renovar la cuenta. \nPulse 2 para bloquear la cuenta.\nPulse 3 para pasar a la siguiente cuenta.\n'
 		read -n1 -p "Introduzca un opción ha realizar con el usuario: " ACCION6
 		case $ACCION6 in
@@ -188,7 +192,7 @@ Accionesexpirados() {
 				exit;;
 			1)
 				echo $'\n'
-				read -n1 -p "¿Está seguro que desea renovar a este usuario?: [s/n]\n" ACCION7
+				read -n1 -p "¿Está seguro que desea renovar a este usuario?: [s/n]" ACCION7
 				case $ACCION7 in
 					s)
 						clear
@@ -196,13 +200,13 @@ Accionesexpirados() {
 						;;
 					n)
 						clear
-						echo "Usted ha decidido no renovar la cuenta $nombre"
+						echo "Ha decidido no renovar la cuenta $nombre"
 						;;
 				esac
 				;;
 			2)
 				echo $'\n'
-				read -n1 -p "¿Está seguro que desea bloquear este usuario?: [s/n]\n" ACCION8
+				read -n1 -p "¿Está seguro que desea bloquear este usuario?: [s/n]" ACCION8
 				case $ACCION8 in
 					s)
 						clear
@@ -210,13 +214,13 @@ Accionesexpirados() {
 						;;
 					n)
 						clear
-						echo "Usted ha decido bloquear esta cuenta, $nombre "
+						echo "La cuenta $nombre no ha sido bloqueada"
 						;;
 				esac
 				;;
 			3)
 				clear
-				echo "Usted ha decido no realizar ninguna acción con la cuenta $nombre ."
+				echo "Ninguna acción a realizar con la cuenta $nombre ."
 				;;
 			*)
 				clear
@@ -256,7 +260,7 @@ for i in $obtenercaducidad; do
 	
 done
 
-Comprobarultimaconexion=`ssh sesamo "bash /opt/scripts/usuarios-ultimaConexion.sh" | egrep -v '(Nunca ha entrado|root|Nombre)' | tr -s ' ' | cut -d " " -f 1 | tail -n+4`
+Comprobarultimaconexion=`ssh sesamo "bash /opt/scripts/usuarios-ultimaConexion.sh" | egrep -v '(Nunca ha entrado|root|Nombre)' | egrep -v "accedido" | tr -s ' ' | cut -d " " -f 1 | tail -n+4`
 for usuario in $Comprobarultimaconexion; do #Comprobamos los usuarios que llevan más de 1 año sin entrar a sesamo y que no estén bloqueados.
 	comprobarshell=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" "uid=$usuario" loginShell | egrep ^loginShell | cut -d " " -f 2 `
 	if [[ $comprobarshell == "/bin/bash" ]]; then
