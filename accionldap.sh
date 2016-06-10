@@ -17,7 +17,7 @@ informardesbloqueo() {
         local pass=$2
         local email=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" -s sub "uid=$nombre" mail |grep ^mail |cut -d " " -f 2`
 
-        echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informale que su cuenta $nombre ha sido desbloqueada de los servicios de Supercomputación de CICA. \n\nEstos son los nuevos datos de acceso: \nUsuario: $nombre \nContraseña: $pass" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Cuenta en los servicios de Supercomputación de CICA" -aFrom:Supercomputacion\ CICA\<eciencia@cica.es\> $email
+        echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informarle que su cuenta $nombre ha sido desbloqueada de los servicios de Supercomputación de CICA. \n\nEstos son los nuevos datos de acceso: \nUsuario: $nombre \nContraseña: $pass" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Cuenta en los servicios de Supercomputación de CICA" -aFrom:Supercomputacion\ CICA\<eciencia@cica.es\> $email
 }
 
 informarrenovacion() {
@@ -25,7 +25,14 @@ informarrenovacion() {
         local pass=$2
         local email=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" -s sub "uid=$nombre" mail |grep ^mail |cut -d " " -f 2`
 
-        echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informale que su cuenta $nombre ha sido renovada de los servicios de Supercomputación de CICA. \n\nEstos son los nuevos datos de acceso: \nUsuario: $nombre \nContraseña: $pass" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Cuenta en los servicios de Supercomputación de CICA" -aFrom:Supercomputacion\ CICA\<eciencia@cica.es\> $email
+        echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informarle que su cuenta $nombre ha sido renovada de los servicios de Supercomputación de CICA. \n\nEstos son los nuevos datos de acceso: \nUsuario: $nombre \nContraseña: $pass" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Cuenta en los servicios de Supercomputación de CICA" -aFrom:Supercomputacion\ CICA\<eciencia@cica.es\> $email
+}
+
+informarbloqueo() {
+        local nombre=$1
+        local email=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" -s sub "uid=$nombre" mail |grep ^mail |cut -d " " -f 2`
+
+        echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informarle que su cuenta $nombre ha sido bloqueada de los servicios de Supercomputación de CICA. \nPuede ponerse en contacto con los servicios de supercomputación a través de la dirección de correo eciencia@cica.es." | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Cuenta en los servicios de Supercomputación de CICA" -aFrom:Supercomputacion\ CICA\<eciencia@cica.es\> $email
 }
 
 desbloquearcuenta() {
@@ -73,7 +80,8 @@ changeType: modify
 replace: loginShell
 loginShell: /bin/false
 EOF`
-
+	echo "La cuenta del usuario $nombre ha sido bloqueada."
+	informarbloqueo $nombre 
 }	
 
 renovarcuenta() {

@@ -17,7 +17,7 @@ Calculardias() {
 	local fecha=$2
 	local fechacaducidad=`date +%Y/%m/%d -d "$fecha + 1 year"`
 	local fechacaducidadUE=`date +%s -d "$fecha + 1 year"`
-	local diferencia=$(( ( fechacaducidadUE - díaactual) / 86400 ))
+	local diferencia=$(( ( fechacaducidadUE - diaactual) / 86400 ))
 	local email=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" -s sub "uid=$nombre" mail |grep ^mail |cut -d " " -f 2`
 	WARNING $nombre $email $fechacaducidad
 	echo "La fecha de expiración de la cuenta del usuario $nombre se aproxima: $fechacaducidad" >> info_email.txt
@@ -67,8 +67,8 @@ WARNING_CICA() {
 INFO_EXPIRADO() {
 	local nombre=$1
 	local email=$2
-	#echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informale que su cuenta $nombre ha expirado en los servicios de Supercomputación de CICA. \nPara renovar su cuenta debe ponerse en contacto con los servicios de supercomputacion a través de la direcion de correo eciencia@cica.es.\n" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Expiración de cuenta en servicios de Supercomputacion de CICA" $email
-	echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informale que su cuenta $nombre va a expirar en los servicios de Supercomputación de CICA. \nPuede renovar su cuenta modificando la contraseña de esta. Dispone de un periodo de 14 días desde la recepción de este correo para realizar dicha acción, de lo contrario su cuenta será bloqueada. \nPuede ponerse en contacto con los servicios de supercomputacion a través de la direcion de correo eciencia@cica.es.\n " | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Expiración de cuenta en servicios de Supercomputacion de CICA" -aFrom:Supercomputacion\ CICA\<eciencia@cica.es\> $email
+	#echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informarle que su cuenta $nombre ha expirado en los servicios de Supercomputación de CICA. \nPara renovar su cuenta debe ponerse en contacto con los servicios de supercomputacion a través de la dirección de correo eciencia@cica.es.\n" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Expiración de cuenta en servicios de Supercomputacion de CICA" $email
+	echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informarle que su cuenta $nombre va a expirar en los servicios de Supercomputación de CICA. \nPuede renovar su cuenta modificando la contraseña de esta. Dispone de un periodo de 14 días desde la recepción de este correo para realizar dicha acción, de lo contrario su cuenta será bloqueada. \nPuede ponerse en contacto con los servicios de supercomputacion a través de la dirección de correo eciencia@cica.es.\n " | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Expiración de cuenta en servicios de Supercomputacion de CICA" -aFrom:Supercomputacion\ CICA\<eciencia@cica.es\> $email
 }
 
 #Obtenerdatos: Obtiene los usuarios que están dentro de los margenes de 11 a 12 meses o más de 12 meses.
