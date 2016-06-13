@@ -2,13 +2,30 @@
 
 servidorldap="ldaps://ldap1.hpc.cica.es:636"
 adminldap="cn=Manager,dc=cica,dc=es"
-passldap="-"
+passldap="DLX39E<&q3"
 ramaldap="ou=supercomputacion,ou=externos,ou=users,ou=cuentas,dc=cica,dc=es"
 diaactual=`date +%Y/%m/%d`
 diaactualUE=`date +%s`
 margenmax=`date +%s --date='-12 month'` #El tiempo de expiracion será de 1 año
 declare -A Usuariosinactivos
 declare -A Usuariosexpirados
+
+informarexpiracion() {
+	local nombre=$1
+	local email="manuel.luna@cica.es"
+	#local email=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" -s sub "uid=$nombre" mail |grep ^mail |cut -d " " -f 2`
+
+	echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informarle que su cuenta $nombre ha expirado en los servicios de Supercomputación de CICA. \nPuede ponerse en contacto con los servicios de supercomputación para renovar su cuenta a través de la dirección de correo eciencia@cica.es " | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Expiración cuenta en los servicios de Supercomputación de CICA" -aFrom:Supercomputacion\ CICA\<eciencia@cica.es\> $email
+}
+
+informardiasrestantes() {
+	local nombre=$1
+	local dias=$2
+	local email="manuel.luna@cica.es"
+	#local email=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" -s sub "uid=$nombre" mail |grep ^mail |cut -d " " -f 2`
+
+	echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para recordarle que su cuenta $nombre ha expirado en los servicios de Supercomputación de CICA. \nDispone de $dias días para ponerse en contacto con nosotros para que renovemos su cuenta, de lo contrario será bloqueada. \nPuede ponerse en contacto con los servicios de supercomputación a través de la dirección de correo eciencia@cica.es " | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Expiración cuenta en los servicios de Supercomputación de CICA" -aFrom:Supercomputacion\ CICA\<eciencia@cica.es\> $email
+}
 
 Estadoactivo() {
 	local nombre=$1
@@ -36,7 +53,8 @@ dn: uid=$nombre,$ramaldap
 changeType: modify
 add: accountStatus
 accountStatus: Expirado,actualizado:$diaactual,expiracion:$fechaexpiracion,vida:$diferencia
-EOF`	
+EOF`
+	informarexpiracion $nombre
 	fi
 }
 
@@ -50,7 +68,8 @@ dn: uid=$nombre,$ramaldap
 changeType: modify
 add: accountStatus
 accountStatus: Inactivo,actualizado:$diaactual,expiracion:$fechaexpiracion,vida:$diferencia
-EOF`	
+EOF`
+	informarexpiracion $nombre
 }
 
 Actualizarestadoactivo(){
@@ -60,12 +79,13 @@ Actualizarestadoactivo(){
 	local fechacaducidadUE=`date +%s -d "$fechacaducidad"`
 	local diferencia=$(((fechacaducidadUE - diaactualUE) / 86400))
 	echo "$nombre - accountStatus: Activo,fechacaducidad:$fechacaducidad,vida:$diferencia"
-	#`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
-#dn: uid=$nombre,$ramaldap
-#changeType: modify
-#replace: accountStatus
-#accountStatus: Activo,fechacaducidad:$fechacaducidad,vida:$diferencia
-#EOF`	
+	`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
+dn: uid=$nombre,$ramaldap
+changeType: modify
+replace: accountStatus
+accountStatus: Activo,fechacaducidad:$fechacaducidad,vida:$diferencia
+EOF`	
+
 }
 
 Actualizardiasexpirado(){
@@ -74,12 +94,15 @@ Actualizardiasexpirado(){
 	local expiracionUE=$3
 	local diferencia=$(((expiracionUE - diaactualUE) / 86400))
 	echo "$nombre - accountStatus: Expirado,actualizado:$diaactual,expiracion:$expiracion,vida:$diferencia"
-	#`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
-#dn: uid=$nombre,$ramaldap
-#changeType: modify
-#replace: accountStatus
-#accountStatus: Expirado,actualizado:$diaactual,expiracion:$expiracion,vida:$diferencia
-#EOF`	
+	`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
+dn: uid=$nombre,$ramaldap
+changeType: modify
+replace: accountStatus
+accountStatus: Expirado,actualizado:$diaactual,expiracion:$expiracion,vida:$diferencia
+EOF`
+	if [[ $diferencia = 7 ]]; then
+		informardiasrestantes $nombre $diferencia
+	fi
 }
 
 Actualizardiasinactivo(){
@@ -88,12 +111,16 @@ Actualizardiasinactivo(){
 	local expiracionUE=$3
 	local diferencia=$(((expiracionUE - diaactualUE) / 86400))
 	echo "$nombre - accountStatus: Inactivo,actualizado:$diaactual,expiracion:$expiracion,vida:$diferencia"
-	#`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
-#dn: uid=$nombre,$ramaldap
-#changeType: modify
-#replace: accountStatus
-#accountStatus: Inactivo,actualizado:$diaactual,expiracion:$expiracion,vida:$diferencia
-#EOF`	
+	`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
+dn: uid=$nombre,$ramaldap
+changeType: modify
+replace: accountStatus
+accountStatus: Inactivo,actualizado:$diaactual,expiracion:$expiracion,vida:$diferencia
+EOF`	
+	if [[ $diferencia = 7 ]]; then
+		informardiasrestantes $nombre $diferencia
+	fi
+
 }
 
 Cambiaraexpirado() {
@@ -103,12 +130,13 @@ Cambiaraexpirado() {
 	local diferencia=$(((fechaexpiracionUE - diaactualUE) / 86400))
 	Usuariosexpirados[$nombre]=1
 	echo "Se ha cambiado a expirado $nombre - accountStatus: Expirado,actualizado:$diaactual,expiracion:$fechaexpiracion,vida:$diferencia"
-	#`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
-#dn: uid=$nombre,$ramaldap
-#changeType: modify
-#replace: accountStatus
-#accountStatus: Expirado,actualizado:$diaactual,expiracion:$fechaexpiracion,vida:$diferencia
-#EOF`
+	`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
+dn: uid=$nombre,$ramaldap
+changeType: modify
+replace: accountStatus
+accountStatus: Expirado,actualizado:$diaactual,expiracion:$fechaexpiracion,vida:$diferencia
+EOF`
+	informarexpiracion $nombre
 }
 
 Cambiarabloqueado() {
@@ -163,9 +191,7 @@ Accionesestado() {
 		if [[ $fechaexpiracioninactivoUE -lt $diaactualUE ]]; then
 			Cambiarabloqueado $nombre
 		else
-			Actualizardiasinactivo $nombre $fechaexpiracioninactivo $fechaexpiracioninactivoUE
-			echo "-------------"
-			echo $nombre
+			Actualizardiasinactivo $nombre $fechaexpiracioninactivo $fechaexpiracioninactivoUE	
 		fi
 	fi
 }
