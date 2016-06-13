@@ -5,21 +5,24 @@ Objetivo: Poner fecha de caducidad en las cuentas creadas de supercomputación.
 - Se informará al usuario y al cica.
 - Finalmente se realizarán 2 scripts
 
-mailldapaccount:
- - Comprueba las cuentas que expiran en menos de 1 mes.
- - Comprueba las cuentas ya expiradas, comprobando la fecha de última modificación (ModifyTimestamp) y los usuarios que no han accedido a sésamo en un periodo de 1 año. Se bloquea automáticamente a estos usuarios, añadiendo el atributo "pwdAccountLockedTime: 00001010000Z" además de modificar la shell del usuario a "/bin/false"
- - Se informa al cica por email de las cuentas que van a expirar y las ya expiradas.
- - Se envia al usuario un email informando de:
-	- Si la fecha de expiración se aproxima, además de los dias restantes.
-	- Si su cuenta ya ha expirado, las acciones que debe realizar para renovar su cuenta.
+estadoldap:
+ - Comprueba la fecha de creación de las cuentas de ldap.
+ - Busca el estado de cada cuenta, si no tiene estado, se introduce.
+ - El estado tendrá el siguiente formato y se actualiza diariamente:
+	- Activo,fechacaducidad:$fechacaducidad,vida:$diasrestantes
+	- Expirado,actualizado:$diaactual,expiracion:$fechaexpiracion,vida:$diasrestantes
+	- Inactivo,actualizado:$diaactual,expiracion:$fechaexpiracion,vida:$diasrestantes
+	- Bloqueado
+ - Para los usuarios que pasen de activo a expirado, dispondrán de un nuevo periodo de caducidad de 14 dias:
+	- Se informa al usuario por mail diciéndole que debe ponerse en contacto con nosotros para renovar su cuenta.
+	- Cuando queden 7 dias se le vuelve a informar.
+	- Si pasa el tiempo transcurrido se bloquea al usuario automáticamente.
 
-Accionldap:
+Accionusuarios:
 
- - Busca los usuarios que están bloqueados, comprobando la shell de todos los usuarios.
+ - Busca los usuarios que están expirados, inactivos o bloqueados.
  - Una vez obtenido los usuarios se preguntará qué accion realizar, siendo las opciones:
-	- Desbloquear, se genera una contraseña automáticamente, se borra el atributo "pwdAccountLockedTime" y se cambia la shell a "/bin/bash". Se informa al usuario por correo de sus nuevos datos de acceso.
-	- Eliminar, se elimina la cuenta de ldap.
- - Busca los usuarios que van a expirar y dá la posibilidad de renovar a dichos usuarios.
-
- - Busca los usuarios que han expirado y ejecuta la posibilidad de renovar o bloquear a estos. 
-mailldapaccount será añadido al crontab para que se ejecute semanalmente.
+	- Renovar: para los usuarios expirados, inactivos y bloqueados.
+		- Se le renueva por un periodo de 1 año.
+		- Se informa al usuario por correo.
+	- Eliminar: para los bloqueados.
