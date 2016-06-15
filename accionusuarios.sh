@@ -40,6 +40,23 @@ eliminarcuenta() {
 	echo "La cuenta del usuario $nombre ha sido eliminada."
 }	
 
+desbloquearcuenta() {
+	local nombre=$1
+	`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
+dn: uid=$nombre,$ramaldap
+changeType: modify
+replace: loginShell
+loginShell: /bin/bash
+EOF`
+
+	`2>/dev/null 1>/dev/null ldapadd -H $servidorldap -x -D "$adminldap" -w "$passldap" << EOF                                                                                  
+dn: uid=$nombre,$ramaldap
+changeType: modify
+delete: pwdAccountLockedTime
+EOF`
+
+}
+
 Accionesbloqueados() {
 	for nombre in "${!Usuariosbloqueados[@]}"; do
 		echo "Usuario bloqueado: Acciones a realizar con la cuenta de $nombre"
@@ -70,6 +87,7 @@ Accionesbloqueados() {
 				case $ACCION3 in
 					s)
 						clear
+						desbloquearcuenta $nombre
 						renovarcuenta $nombre
 						;;
 					n)
