@@ -2,7 +2,7 @@
 
 servidorldap="ldaps://ldap1.hpc.cica.es:636"
 adminldap="cn=Manager,dc=cica,dc=es"
-passldap="-"
+passldap="DLX39E<&q3"
 ramaldap="ou=supercomputacion,ou=externos,ou=users,ou=cuentas,dc=cica,dc=es"
 diaactual=`date +%Y/%m/%d`
 diaactualUE=`date +%s`
@@ -12,10 +12,9 @@ declare -A Usuariosbloqueados
 
 informarrenovacion() {
 	local nombre=$1
-	local email="manuel.luna@cica.es"
-	#local email=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" -s sub "uid=$nombre" mail |grep ^mail |cut -d " " -f 2`
+	local email=`ldapsearch -H $servidorldap -x -D "$adminldap" -w "$passldap" -b "$ramaldap" -s sub "uid=$nombre" mail |grep ^mail |cut -d " " -f 2`
 
-	echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informarle que su cuenta $nombre ha sido renovada de los servicios de Supercomputación de CICA. \n" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Cuenta en los servicios de Supercomputación de CICA" -aFrom:Supercomputacion\ CICA\<eciencia@cica.es\> $email
+	echo -e "Estimado usuario: \n\nNos ponemos en contacto con usted para informarle que su cuenta $nombre ha sido renovada de los servicios de Supercomputación de CICA. \n" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Cuenta en los servicios de Supercomputación de CICA" -c "eciencia@cica.es" -aFrom:Supercomputacion\ CICA\<eciencia@cica.es\> $email
 }
 
 renovarcuenta () {
