@@ -2,7 +2,7 @@
 
 servidorldap="ldaps://ldap1.hpc.cica.es:636"
 adminldap="cn=Manager,dc=cica,dc=es"
-passldap="DLX39E<&q3"
+passldap="-"
 ramaldap="ou=supercomputacion,ou=externos,ou=users,ou=cuentas,dc=cica,dc=es"
 diaactual=`date +%Y/%m/%d`
 diaactualUE=`date +%s`
